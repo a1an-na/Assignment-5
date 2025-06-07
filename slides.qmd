@@ -1,0 +1,115 @@
+---
+title: "World Development Indicators: Key Insights"
+author: "Alan"
+date: 2025-06-06
+format: 
+  revealjs:
+    theme: serif
+    transition: fade
+    slide-number: true
+    toc: true
+editor: visual
+bibliography: references.bib
+---
+
+```{r}
+#| label: setup
+#| echo: false
+
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(knitr)
+
+wdi <- read_csv("wdi_2022.csv")
+```
+
+## Welcome
+
+Welcome to this presentation on the 2022 World Development Indicators.  
+We’ll explore GDP, life expectancy, education, and population trends.
+
+---
+
+## GDP vs Life Expectancy
+
+- Wealthier countries often enjoy longer life expectancies.
+- Higher GDP typically correlates with better public health outcomes.
+
+```{r}
+#| label: fig-gdp-life-slide
+#| echo: false
+#| fig-cap: "GDP vs Life Expectancy (2022)"
+
+ggplot(wdi, aes(x = gdp_per_capita, y = life_expectancy)) +
+  geom_point(color = "steelblue") +
+  labs(x = "GDP per Capita (USD)", y = "Life Expectancy (Years)") +
+  theme_minimal()
+```
+
+---
+
+## Top 10 Most Populous Countries
+
+- Population is highly concentrated in a few nations.
+- Useful for understanding market size, healthcare needs, etc.
+
+```{r}
+#| label: fig-population
+#| echo: false
+#| fig-cap: "Top 10 Most Populous Countries (2022)"
+
+wdi %>%
+  filter(!is.na(total_population)) %>%
+  arrange(desc(total_population)) %>%
+  slice_head(n = 10) %>%
+  ggplot(aes(x = reorder(country, total_population), y = total_population)) +
+  geom_bar(stat = "identity", fill = "darkgreen") +
+  coord_flip() +
+  labs(x = "Country", y = "Total Population") +
+  theme_minimal()
+```
+
+---
+
+## Summary Statistics
+
+Key statistics across selected indicators.
+
+```{r}
+#| label: tbl-summary-slide
+#| echo: false
+#| tbl-cap: "Summary Statistics of Development Indicators (2022)"
+
+summary_table <- wdi %>%
+  summarise(
+    `Mean GDP per Capita` = mean(gdp_per_capita, na.rm = TRUE),
+    `Median GDP per Capita` = median(gdp_per_capita, na.rm = TRUE),
+    `Min GDP per Capita` = min(gdp_per_capita, na.rm = TRUE),
+    `Max GDP per Capita` = max(gdp_per_capita, na.rm = TRUE),
+
+    `Mean Life Expectancy` = mean(life_expectancy, na.rm = TRUE),
+    `Median Life Expectancy` = median(life_expectancy, na.rm = TRUE),
+    `Min Life Expectancy` = min(life_expectancy, na.rm = TRUE),
+    `Max Life Expectancy` = max(life_expectancy, na.rm = TRUE),
+
+    `Mean Unemployment Rate` = mean(unemployment_rate, na.rm = TRUE),
+    `Mean Education % of GDP` = mean(education_expenditure_gdp_share, na.rm = TRUE),
+    `Mean Total Population` = mean(total_population, na.rm = TRUE)
+  ) %>%
+  t() %>%
+  as.data.frame()
+
+colnames(summary_table) <- "Value"
+knitr::kable(summary_table)
+```
+
+---
+
+## Conclusion
+
+- Countries with higher GDP tend to have longer life expectancy.
+- Population and education investment vary widely across countries.
+- Insightful indicators help guide economic and public policy.
+
+---

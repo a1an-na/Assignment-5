@@ -1,0 +1,104 @@
+---
+title: "World Development Indicators Analysis"
+author: Alan
+format:
+  html: default
+  pdf: default
+editor: visual
+
+---
+
+```{r setup}
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(knitr)
+
+# Load the dataset before using it
+wdi <- read_csv("wdi_2022.csv")
+```
+
+# Introduction
+
+This report presents an analysis of the World Development Indicators dataset for the year 2022, focusing on 14 selected variables. The goal is to explore trends, visualize key metrics, and draw insights across various countries.
+
+# GDP vs Life Expectancy
+
+As seen in @fig-gdp_life, countries with higher GDP per capita generally experience longer life expectancy. This suggests a strong correlation between national wealth and public health outcomes.
+
+```{r}
+#| label: fig-gdp_life
+#| fig-cap: "GDP per capita vs Life Expectancy (2022)."
+#| echo: false
+
+ggplot(wdi, aes(x = gdp_per_capita, y = life_expectancy)) +
+  geom_point(color = "steelblue") +
+  labs(
+    title = "GDP vs Life Expectancy",
+    x = "GDP per Capita (USD)",
+    y = "Life Expectancy (Years)"
+  ) +
+  theme_minimal()
+```
+
+---
+
+```{r}
+#| label: fig-population
+#| echo: false
+#| fig-cap: "Top 10 Most Populous Countries"
+
+wdi %>%
+  filter(!is.na(total_population)) %>%
+  arrange(desc(total_population)) %>%
+  slice_head(n = 10) %>%
+  ggplot(aes(x = reorder(country, total_population), y = total_population)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  coord_flip() +
+  labs(x = "Country", y = "Total Population") +
+  theme_minimal()
+```
+
+---
+
+# Summary Statistics
+
+To better understand the range of values across countries, Table @tbl-summary presents key summary statistics for selected indicators: GDP per capita, life expectancy, and CO₂ emissions.
+
+```{r}
+#| label: tbl-summary
+#| echo: false
+#| tbl-cap: "Summary Statistics of Key Development Indicators (2022)"
+
+library(dplyr)
+library(knitr)
+
+summary_table <- wdi %>%
+  summarise(
+    `Mean GDP per Capita` = mean(gdp_per_capita, na.rm = TRUE),
+    `Median GDP per Capita` = median(gdp_per_capita, na.rm = TRUE),
+    `Min GDP per Capita` = min(gdp_per_capita, na.rm = TRUE),
+    `Max GDP per Capita` = max(gdp_per_capita, na.rm = TRUE),
+    
+    `Mean Life Expectancy` = mean(life_expectancy, na.rm = TRUE),
+    `Median Life Expectancy` = median(life_expectancy, na.rm = TRUE),
+    `Min Life Expectancy` = min(life_expectancy, na.rm = TRUE),
+    `Max Life Expectancy` = max(life_expectancy, na.rm = TRUE),
+
+    `Mean Unemployment Rate` = mean(unemployment_rate, na.rm = TRUE),
+    `Mean Education % of GDP` = mean(education_expenditure_gdp_share, na.rm = TRUE),
+    `Mean Total Population` = mean(total_population, na.rm = TRUE)
+  ) %>%
+  t() %>%
+  as.data.frame()
+
+colnames(summary_table) <- "Value"
+knitr::kable(summary_table)
+```
+---
+
+```
+bibliography: references.bib
+
+
+The positive relationship between national income and life expectancy reinforces the idea that investment in economic infrastructure leads to better health outcomes [@worldbank2022]. Similar trends have been discussed in economic theory [@piketty2014capital].
